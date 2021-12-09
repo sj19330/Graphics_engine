@@ -327,6 +327,158 @@ void drawFilledTriangle(DrawingWindow &window, CanvasTriangle tri, Colour col){
 	interpolateSidesAndFill(bottomTri, window, col, 1);
 }
 
+
+//     texture map method
+
+
+
+vector<CanvasPoint> interpolateSideForTex(CanvasPoint start, CanvasPoint end){
+    vector<CanvasPoint> v;
+	// cout << start.y << " " << end.y << endl;
+    float numberOfValuesy = abs(round(end.y) - round(start.y));
+	// cout << numberOfValuesy <<endl;
+    float numberOfValuesx = abs(round(end.x) - round(start.x));
+    float numberOfValues = fmax(numberOfValuesy, numberOfValuesx);
+    float stepSizex = (end.x - start.x)/numberOfValues;
+    float stepSizey = (end.y - start.y)/numberOfValues;
+    float individualDepthSepperation = -(start.depth - end.depth)/numberOfValues;
+    for (int i=0; i<numberOfValues; i++){
+        CanvasPoint temp = CanvasPoint(round(start.x + i*stepSizex), round(start.y + i*stepSizey), (start.depth + i*(individualDepthSepperation)));
+        v.push_back(temp);
+    }
+    return v;
+}
+
+vector<CanvasPoint> interpolateSideForTex(TexturePoint start, TexturePoint end){
+    vector<CanvasPoint> v;
+    float numberOfTexValuesy = abs(round(end.y) - round(start.y));
+	// cout << numberOfTexValuesy << endl;
+    float numberOfTexValuesx = abs(round(end.x) - round(start.x));
+	// cout << numberOfTexValuesx << endl;
+    float numberOfTexValues = fmax(numberOfTexValuesy, numberOfTexValuesx);
+    float texStepSizex = (end.x - start.x)/numberOfTexValues;
+    float texStepSizey = (end.y - start.y)/numberOfTexValues;
+    for (int i=0; i<numberOfTexValues; i++){
+        CanvasPoint temp = CanvasPoint(round(start.x + i*texStepSizex), round(start.y + i *texStepSizey));
+        v.push_back(temp);
+    }
+    return v;
+}
+
+CanvasPoint findNewPointTex(CanvasTriangle tri){
+	float heightDiff = tri.v0().y - tri.v2().y;
+	float widthDiff = tri.v0().x - tri.v2().x;
+	float depthDiff = tri.v0().depth - tri.v2().depth;
+	float proportionDownSide = (tri.v0().y - tri.v1().y)/heightDiff;
+	float newz = tri.v0().depth - depthDiff*proportionDownSide;
+    float newx = tri.v0().x - widthDiff*proportionDownSide;
+    float newy = tri.v1().y;
+    
+    float texHeightDiff = tri.v0().texturePoint.y - tri.v2().texturePoint.y;
+    float texWidthDiff = tri.v0().texturePoint.x - tri.v2().texturePoint.x;
+    float newTexX = tri.v0().texturePoint.x - texWidthDiff*proportionDownSide;
+    float newTexY = tri.v0().texturePoint.y - texHeightDiff*proportionDownSide;
+	
+    TexturePoint newTex = TexturePoint(round(newTexX), round(newTexY));
+	CanvasPoint result = CanvasPoint(round(newx), newy, newz);
+    result.texturePoint = newTex;
+	return result;
+}
+
+
+void drawTextureLine(CanvasPoint texStart, CanvasPoint texEnd, CanvasPoint from, CanvasPoint to, TextureMap map, DrawingWindow &window){
+    // cout << " in drawTextureline" << endl;
+	// cout << map.width <<" x " << map.height << endl;
+	// cout << from.x << " - " << to.x <<endl;
+	float numberOfSteps = abs(to.x - from.x);
+	// cout << texStart << " " << texEnd << endl;
+    float depthDiff = to.depth - from.depth;
+	float individualStepDepthDifference = depthDiff/numberOfSteps;
+    vector<CanvasPoint> textureLine = interpolateSideForTex(texStart, texEnd);
+	// cout << textureLine.size() <<  " " << numberOfSteps << endl;
+    for(float i=0.0; i<numberOfSteps; i++){
+        float oneStepThroughTexLine = (textureLine.size()-1)/numberOfSteps;
+        int x = from.x - i;
+        int y = from.y;
+        float depth = from.depth+individualStepDepthDifference*i;
+        if(DEPTHBUFFER[x][y] == 0){
+            float pixel = (textureLine[round(i*oneStepThroughTexLine)].y * map.width) +textureLine[round(i*oneStepThroughTexLine)].x;
+            uint32_t colour = map.pixels[pixel];
+            window.setPixelColour(round(x), from.y, colour);
+            DEPTHBUFFER[x][y] = 1/depth;         
+        }else if(DEPTHBUFFER[x][y]>(1/depth)){
+            float pixel = (textureLine[round(i*oneStepThroughTexLine)].y * map.width) +textureLine[round(i*oneStepThroughTexLine)].x;
+            uint32_t colour = map.pixels[pixel];
+            window.setPixelColour(round(x), from.y, colour);
+            DEPTHBUFFER[x][y] = 1/depth;  
+        }
+
+    }
+}
+
+void drawTopHalfTriangle(DrawingWindow &window, CanvasTriangle triangle, TextureMap map){
+    vector<CanvasPoint> topSide1 = interpolateSideForTex(triangle.v0(), triangle.v1());
+    vector<CanvasPoint> topSide2 = interpolateSideForTex(triangle.v0(), triangle.v2());
+    vector<CanvasPoint> texTopside1 = interpolateSideForTex(triangle.v0().texturePoint, triangle.v1().texturePoint);
+    vector<CanvasPoint> texTopside2 = interpolateSideForTex(triangle.v0().texturePoint, triangle.v2().texturePoint);
+    for(float i=0; i<topSide1.size(); i++){
+        for(float j=0; j<topSide2.size(); j++){
+            if(topSide1[i].y == topSide2[j].y){
+                float side1Proportion = i/topSide1.size();
+                float side2Proportion = j/topSide2.size();
+                float texturePosition1 = round(texTopside1.size()*side1Proportion);
+                float texturePosition2 = round(texTopside2.size()*side2Proportion);
+				drawTextureLine(texTopside1[texturePosition1],texTopside2[texturePosition2], topSide1[i], topSide2[j], map, window);
+            }
+        }
+    }
+}
+void drawBottomHalfTriangle(DrawingWindow &window, CanvasTriangle triangle, TextureMap map){
+    vector<CanvasPoint> bottomSide1 = interpolateSideForTex(triangle.v0(), triangle.v2());
+    vector<CanvasPoint> bottomSide2 = interpolateSideForTex(triangle.v1(), triangle.v2());  
+    vector<CanvasPoint> texbottomSide1 = interpolateSideForTex(triangle.v0().texturePoint, triangle.v2().texturePoint);
+    vector<CanvasPoint> texbottomSide2 = interpolateSideForTex(triangle.v1().texturePoint, triangle.v2().texturePoint); 
+	for(float i=0; i<bottomSide1.size(); i++){
+        for(float j=0; j<bottomSide2.size(); j++){
+            if(bottomSide1[i].y == bottomSide2[j].y){
+                float side1Proportion = i/bottomSide1.size();
+                float side2Proportion = j/bottomSide2.size();
+                float texturePosition1 = round(texbottomSide1.size()*side1Proportion);
+                float texturePosition2 = round(texbottomSide2.size()*side2Proportion);
+                drawTextureLine(texbottomSide1[texturePosition1],texbottomSide2[texturePosition2], bottomSide1[i], bottomSide2[j], map, window);
+            }
+        }
+    }
+}
+
+void textured(DrawingWindow &window, CanvasTriangle triangle){
+    TextureMap map = TextureMap("libs/sdw/texture.ppm");
+    // triangle.v0().texturePoint = TexturePoint(195, 5);
+    // triangle.v1().texturePoint = TexturePoint(395, 380);
+    // triangle.v2().texturePoint = TexturePoint(65, 330);
+	triangle.v0().texturePoint = TexturePoint(round(triangle.v0().texturePoint.x*map.width), round(map.height - triangle.v0().texturePoint.y*map.height));
+    triangle.v1().texturePoint = TexturePoint(round(triangle.v1().texturePoint.x*map.width), round(map.height - triangle.v1().texturePoint.y*map.height));
+    triangle.v2().texturePoint = TexturePoint(round(triangle.v2().texturePoint.x*map.width), round(map.height - triangle.v2().texturePoint.y*map.height));
+	cout << triangle.v0().texturePoint << endl << triangle.v1().texturePoint << endl << triangle.v2().texturePoint << endl;
+	triangle = sort(triangle);
+	if(triangle.v0().y == triangle.v1().y){
+		cout<< "drawing bottom half" << endl;
+		drawBottomHalfTriangle(window, triangle, map);
+	}
+	else if(triangle.v1().y == triangle.v2().y){
+		cout << "drawing top hafl" <<endl;
+		drawTopHalfTriangle(window, triangle, map);
+	}
+	else{
+		CanvasPoint newPoint = findNewPointTex(triangle);
+		CanvasTriangle topTriangle = CanvasTriangle(triangle.v0(), triangle.v1(), newPoint);
+		CanvasTriangle bottomTriangle = CanvasTriangle(newPoint, triangle.v1(), triangle.v2());
+		drawTopHalfTriangle(window, topTriangle, map);
+		drawBottomHalfTriangle(window, bottomTriangle, map);	
+	}
+}
+
+
 void rasturisedDraw(DrawingWindow &window, vector<CanvasTriangle> canvasTriangles, vector<Colour> colours, vector<CanvasPoint> points, string choice){
 	
 	if(choice == "rasturising colour"){
@@ -355,9 +507,28 @@ void rasturisedDraw(DrawingWindow &window, vector<CanvasTriangle> canvasTriangle
 		}
 		window.renderFrame();
 	}
+	else if(choice == "texturemap"){
+		window.clearPixels();
+		initialiseDepthBuffer();
+		for(int i=0; i<canvasTriangles.size(); i++){
+			Colour tempColour = colours[i];
+			if(canvasTriangles[i].textured){
+				canvasTriangles[i].v0().x = round(canvasTriangles[i].v0().x);
+				canvasTriangles[i].v0().y = round(canvasTriangles[i].v0().y);
+				canvasTriangles[i].v1().x = round(canvasTriangles[i].v1().x);
+				canvasTriangles[i].v1().y = round(canvasTriangles[i].v1().y);
+				canvasTriangles[i].v2().x = round(canvasTriangles[i].v2().x);
+				canvasTriangles[i].v2().y = round(canvasTriangles[i].v2().y);
+				textured(window, canvasTriangles[i]);
+			}
+			else{
+				drawFilledTriangle(window, canvasTriangles[i], tempColour);
+			}
+        }
+		window.renderFrame();
+	}
 	
 }
-
 
 
 
@@ -701,6 +872,11 @@ string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> p
 			choice = "rayTrace";
 			return choice;		
 		}
+		else if (event.key.keysym.sym == SDLK_l){
+			cout << "drawing with texture map" << endl;
+			choice = "texturemap";
+			return choice;
+		}
 		else if (event.key.keysym.sym == SDLK_h){
 			cout << "drawing with phong shading" << endl;
 			choice = "phong";
@@ -792,13 +968,15 @@ InitReturn initialise(){
 	for(int i=0; i<modelTriangles.size(); i++){
 		for(int j=0; j<3; j++){
 			CanvasPoint temp = getCanvasIntersectionPoint(cameraPosition, modelTriangles[i].vertices[j], focalLength);
+            temp.texturePoint = modelTriangles[i].texturePoints[j];
 			canvasPoints.push_back(temp);
 		}
 		triangleColours.push_back(modelTriangles[i].colour);
 	}
 	//puts the canvas points back into triangles but now with coords for the canvas
-	for(int i=0; i<canvasPoints.size(); i=i+3){
+	for(float i=0; i<canvasPoints.size(); i=i+3){
 		CanvasTriangle temp = CanvasTriangle(canvasPoints[i], canvasPoints[i+1], canvasPoints[i+2]);
+		temp.textured = modelTriangles[i/3].textured;
 		canvasTriangles.push_back(temp);
 	}
 	InitReturn final;

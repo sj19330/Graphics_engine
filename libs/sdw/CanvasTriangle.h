@@ -15,6 +15,7 @@ struct CanvasTriangle {
 	CanvasPoint operator[](size_t i) const;
 	CanvasPoint &operator[](size_t i);
 	friend std::ostream &operator<<(std::ostream &os, const CanvasTriangle &triangle);
+	bool textured {};
 };
 
 std::ostream &operator<<(std::ostream &os, const CanvasTriangle &triangle);

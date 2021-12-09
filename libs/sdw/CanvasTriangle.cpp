@@ -2,7 +2,7 @@
 
 CanvasTriangle::CanvasTriangle() = default;
 CanvasTriangle::CanvasTriangle(const CanvasPoint &v0, const CanvasPoint &v1, const CanvasPoint &v2) :
-    vertices({{v0, v1, v2}}) {}
+    vertices({{v0, v1, v2}}), textured() {}
 
 CanvasPoint &CanvasTriangle::v0() {
     return vertices[0];

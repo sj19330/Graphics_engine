@@ -17,6 +17,10 @@
 #define HEIGHT 240*2
 using namespace std;
 bool Quit = false;
+
+glm::vec3 CAMERAPOSITION = 	glm::vec3(0.0, 0.0, 4.0);
+glm::mat3 CAMERAORIENTATION = glm::mat3(1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0);
+
 glm::vec3 LIGHTPOSITION = glm::vec3(0.0, 0.4, 0.0);
 vector<glm::vec3> LIGHTPOSITIONS;
 
@@ -114,7 +118,7 @@ vector<ModelTriangle> parser(){
 	bool mirrored;
 
 	//open read and creat a hashmap of mtl file contents then close
-	cfile.open("src/cornell-box2.mtl");
+	cfile.open("src/materials.mtl");
 	if(!cfile.is_open()){
 		cout << "error opening mtl file" << endl;
 	}
@@ -131,7 +135,7 @@ vector<ModelTriangle> parser(){
 	}
 	cfile.close();
 	//open and read the contents of the obj file then close
-	file.open("src/cornell-box2.obj");
+	file.open("src/sphere2.obj");
 	if (!file.is_open()){
 		cout << "error opening obj file" << endl;
 	}
@@ -207,13 +211,13 @@ void initialiseDepthBuffer(){
 
 
 CanvasPoint getCanvasIntersectionPoint(glm::vec3 cameraPosition, glm::vec3 vertexPosition, float focalLength){
-	float scaleUp = 400;
-	//check if i should be returning depth of vertex position z PLUS camera position
-	float depth = vertexPosition.z - cameraPosition.z;
-	float canvasX = (focalLength*((vertexPosition.x)/depth))*scaleUp +WIDTH/2;
-	float canvasY = (focalLength*((vertexPosition.y)/depth))*scaleUp +HEIGHT/2;
+	float scaleUp = 600;
+	glm::vec3 cameraToVertex = vertexPosition - CAMERAPOSITION;
+	glm::vec3 adjusted = cameraToVertex*CAMERAORIENTATION;
+	float depth = adjusted.z;
+	float canvasX = (focalLength*((adjusted.x)/depth))*scaleUp +WIDTH/2;
+	float canvasY = (focalLength*((adjusted.y)/depth))*scaleUp +HEIGHT/2;
 	canvasX = WIDTH - canvasX;
-	depth = vertexPosition.z - cameraPosition.z;
 	return CanvasPoint(canvasX, canvasY, depth);
 }
 void drawPoint(DrawingWindow &window, CanvasPoint point) {
@@ -328,7 +332,7 @@ void drawFilledTriangle(DrawingWindow &window, CanvasTriangle tri, Colour col){
 }
 
 
-//     texture map method
+//     texture map section
 
 
 
@@ -529,8 +533,6 @@ void rasturisedDraw(DrawingWindow &window, vector<CanvasTriangle> canvasTriangle
 	}
 	
 }
-
-
 
 
 
@@ -839,6 +841,42 @@ struct InitReturn {
 	float focalLength;
 } typedef InitReturn;
 
+
+glm::mat3 makeMatrix(float angle, char selection){
+	double pi = 2*acos(0.0);
+	angle = angle *(pi/180);
+	if (selection == 'y'){
+		glm::vec3 col1 = glm::vec3(1.0, 0.0, 0.0);
+		glm::vec3 col2 = glm::vec3(0.0, cosf(angle), sinf(angle));
+		glm::vec3 col3 = glm::vec3(0.0, -sinf(angle), cosf(angle));
+		glm::mat3 matrix = glm::mat3(col1,col2,col3);
+		return matrix;
+	}
+	else if (selection == 'x'){
+		glm::vec3 col1 = glm::vec3(cosf(angle), 0.0, -sinf(angle));
+		glm::vec3 col2 = glm::vec3(0.0, 1.0, 0.0);
+		glm::vec3 col3 = glm::vec3(sinf(angle), 0.0, cosf(angle));
+		glm::mat3 matrix = glm::mat3(col1,col2,col3);
+		return matrix;
+	}
+	else if (selection == 'w'){
+		glm::vec3 col1 = glm::vec3(1.0, 0.0, 0.0);
+		glm::vec3 col2 = glm::vec3(0.0, cosf(angle), sinf(angle));
+		glm::vec3 col3 = glm::vec3(0.0, -sinf(angle), cosf(angle));
+		glm::mat3 matrix = glm::mat3(col1,col2,col3);
+		return matrix;
+	}
+	else if (selection == 'a'){
+		glm::vec3 col1 = glm::vec3(cosf(angle), 0.0, -sinf(angle));
+		glm::vec3 col2 = glm::vec3(0.0, 1.0, 0.0);
+		glm::vec3 col3 = glm::vec3(sinf(angle), 0.0, cosf(angle));
+		glm::mat3 matrix = glm::mat3(col1,col2,col3);
+		return matrix;
+	}
+	else return glm::mat3(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
+	
+}
+
 string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> points, vector<CanvasTriangle> canvasTriangles, vector<Colour> colours, string choice) {
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_LEFT){
@@ -857,6 +895,26 @@ string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> p
 			LIGHTPOSITION[1] = LIGHTPOSITION[1] - 0.1;
 			initiliseLightPositions();
 		}
+		// if (event.key.keysym.sym == SDLK_LEFT){
+		// 	cout << "LEFT" << endl;
+		// 	glm::vec3 change = glm::vec3(-0.10, 0.0, 0.0);
+		// 	CAMERAPOSITION = CAMERAPOSITION + change;
+		// }
+		// else if (event.key.keysym.sym == SDLK_RIGHT){
+		// 	cout << "RIGHT" << endl;
+		// 	glm::vec3 change = glm::vec3(0.10, 0.0, 0.0);
+		// 	CAMERAPOSITION = CAMERAPOSITION + change;
+		// }
+		// else if (event.key.keysym.sym == SDLK_UP){
+		// 	cout << "UP" << endl;
+		// 	glm::vec3 change = glm::vec3(0.0, 0.10, 0.0);
+		// 	CAMERAPOSITION = CAMERAPOSITION + change;
+		// }
+		// else if (event.key.keysym.sym == SDLK_DOWN){
+		// 	cout << "DOWN" << endl;
+		// 	glm::vec3 change = glm::vec3(0.0, -0.10, 0.0);
+		// 	CAMERAPOSITION = CAMERAPOSITION + change;
+		// }
 		else if (event.key.keysym.sym == SDLK_1){
 			cout << "drawing points" << endl;
 			choice = "point";
@@ -932,6 +990,7 @@ string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> p
 		window.saveBMP("output.bmp");
 	}
 	choice = "nothing";
+	cout << glm::to_string(CAMERAPOSITION) << endl;
 	return choice;
 }
 
@@ -991,6 +1050,34 @@ InitReturn initialise(){
 
 
 
+
+void lookAt(){
+	glm::vec3 forward = glm::normalize(CAMERAPOSITION);
+    glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0,1,0),forward));
+    glm::vec3 up = glm::normalize(glm::cross(forward, right));
+	CAMERAORIENTATION =glm::mat3(right, up, forward);
+}
+
+void autoOrbit(DrawingWindow &window, string direction){
+	for(int i=0; i<180;i++){
+		cout << i << endl;
+		InitReturn variables = initialise();
+		window.clearPixels();
+		initialiseDepthBuffer();
+		glm::mat3 change;
+		if(direction == "auto orbit down"){ change = makeMatrix(-2.0,'y');}
+		if(direction == "auto orbit up"){ change = makeMatrix(2.0,'y');}
+		if(direction == "auto orbit left"){ change = makeMatrix(2.0,'x');}
+		if(direction == "auto orbit right"){ change = makeMatrix(-2.0,'x');}
+		CAMERAPOSITION = CAMERAPOSITION*change;
+		lookAt();
+		for(int i=0; i<variables.canvasTriangles.size(); i++){
+			Colour tempColour = variables.triangleColours[i];
+			drawFilledTriangle(window, variables.canvasTriangles[i], tempColour);
+		}
+		window.renderFrame();
+	}
+}
 
 
 int main(int argc, char *argv[]) {

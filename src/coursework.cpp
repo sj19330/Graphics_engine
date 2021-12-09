@@ -114,7 +114,7 @@ vector<ModelTriangle> parser(){
 	bool mirrored;
 
 	//open read and creat a hashmap of mtl file contents then close
-	cfile.open("src/materials.mtl");
+	cfile.open("src/cornell-box2.mtl");
 	if(!cfile.is_open()){
 		cout << "error opening mtl file" << endl;
 	}
@@ -131,7 +131,7 @@ vector<ModelTriangle> parser(){
 	}
 	cfile.close();
 	//open and read the contents of the obj file then close
-	file.open("src/cornell-box.obj");
+	file.open("src/cornell-box2.obj");
 	if (!file.is_open()){
 		cout << "error opening obj file" << endl;
 	}
@@ -857,67 +857,67 @@ string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> p
 			LIGHTPOSITION[1] = LIGHTPOSITION[1] - 0.1;
 			initiliseLightPositions();
 		}
-		else if (event.key.keysym.sym == SDLK_p){
+		else if (event.key.keysym.sym == SDLK_1){
 			cout << "drawing points" << endl;
 			choice = "point";
 			return choice;
 		}
-		else if (event.key.keysym.sym == SDLK_w){
+		else if (event.key.keysym.sym == SDLK_2){
 			cout << "drawing wireframe" << endl;
 			choice ="wireframe";
 			return choice;
 		}
-		else if (event.key.keysym.sym == SDLK_t){
-			cout << "drawing using raytrace technique" << endl;
-			choice = "rayTrace";
-			return choice;		
-		}
-		else if (event.key.keysym.sym == SDLK_l){
-			cout << "drawing with texture map" << endl;
-			choice = "texturemap";
-			return choice;
-		}
-		else if (event.key.keysym.sym == SDLK_h){
-			cout << "drawing with phong shading" << endl;
-			choice = "phong";
-			return choice;
-		}
-		else if (event.key.keysym.sym == SDLK_x){
-			cout << "drawing with proximity" << endl;
-			choice = "proximity";
-			return choice;
-		}
-		else if (event.key.keysym.sym == SDLK_i){
-			cout << "drawing with angle of incidence" << endl;
-			choice = "angleOfIncidence";
-			return choice;
-		}
-		else if (event.key.keysym.sym == SDLK_s){
-			cout << "drawint using specular lighting" <<endl;
-			choice = "specular";
-			return choice;
-		}
-		else if (event.key.keysym.sym ==SDLK_a){
-			cout <<"draw using ambient light" <<endl; 
-			choice = "ambient";
-			return choice;
-		}
-		else if (event.key.keysym.sym == SDLK_r){
+		else if (event.key.keysym.sym == SDLK_3){
 			cout << "drawing using rasturising techinque" << endl;
 			choice = "rasturising colour";
 			return choice;
 		}
-		else if (event.key.keysym.sym == SDLK_z){
+		else if (event.key.keysym.sym == SDLK_4){
+			cout << "drawing with texture map" << endl;
+			choice = "texturemap";
+			return choice;
+		}
+		else if (event.key.keysym.sym == SDLK_5){
+			cout << "drawing using raytrace technique" << endl;
+			choice = "rayTrace";
+			return choice;		
+		}
+		else if (event.key.keysym.sym == SDLK_6){
+			cout << "drawing with proximity" << endl;
+			choice = "proximity";
+			return choice;
+		}
+		else if (event.key.keysym.sym == SDLK_7){
+			cout << "drawing with angle of incidence" << endl;
+			choice = "angleOfIncidence";
+			return choice;
+		}
+		else if (event.key.keysym.sym == SDLK_8){
+			cout << "drawint using specular lighting" <<endl;
+			choice = "specular";
+			return choice;
+		}
+		else if (event.key.keysym.sym ==SDLK_9){
+			cout <<"draw using ambient light" <<endl; 
+			choice = "ambient";
+			return choice;
+		}
+		else if (event.key.keysym.sym == SDLK_0){
 			cout << "rendering with all lighting" << endl;
 			choice = "all";
 			return choice;
 		}
-		else if (event.key.keysym.sym == SDLK_g){
+		else if (event.key.keysym.sym == SDLK_MINUS){
 			cout << "drawing using gouraud" << endl;
 			choice  = "gouraud";
 			return choice;
 		}
-		else if(event.key.keysym.sym == SDLK_f){
+		else if (event.key.keysym.sym == SDLK_EQUALS){
+			cout << "drawing with phong shading" << endl;
+			choice = "phong";
+			return choice;
+		}
+		else if(event.key.keysym.sym == SDLK_z){
 			cout << "drawing with soft shadows" << endl;
 			choice = "soft";
 			return choice;

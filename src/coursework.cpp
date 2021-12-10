@@ -106,6 +106,9 @@ string getWordFromLine(string str){
 
 }
 //read in both mtl and obj file and return a vector of model triangles with their colours
+//the object and material files loaded in are hardcoded in this function, change them to change model
+//NOTE: "materials.mtl" contains all the materials necessary for all the objects other than "cornell-box2.obj"
+//which requires "cornell-box2.mtl"(this is the file for texture mapping)
 vector<ModelTriangle> parser(){
 	float scale = 0.17;
 	string line;
@@ -266,6 +269,7 @@ glm::mat3 makeMatrix(float angle, char selection){
 //clicking just the camera manipulation buttons or move light buttons wont render anything untill a render button is pressed afterwards
 //the sphere objects may not render correctly untill the light source his moved outside the sphere,
 // press the left arrow key a few times then the render you want and it will show the sphere rendered properly
+//pressing q quits the render
 string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> points, vector<CanvasTriangle> canvasTriangles, vector<Colour> colours, string choice) {
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_LEFT){
@@ -1209,6 +1213,8 @@ void rayTraceDraw(DrawingWindow &window, vector<ModelTriangle> modelTriangles, v
 // f 62/ 64/ 61/
 // m n
 //two of the triangles in "cornell-box2.obj" are already set to mirrored
+//NOTE: "materials.mtl" contains all the materials necessary for all the objects other than "cornell-box2.obj"
+//which requires "cornell-box2.mtl"
 int main(int argc, char *argv[]) {
 	initiliseLightPositions();
 	string choice;

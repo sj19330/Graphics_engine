@@ -1208,6 +1208,7 @@ void rayTraceDraw(DrawingWindow &window, vector<ModelTriangle> modelTriangles, v
 // m y
 // f 62/ 64/ 61/
 // m n
+//two of the triangles in "cornell-box2.obj" are already set to mirrored
 int main(int argc, char *argv[]) {
 	initiliseLightPositions();
 	string choice;

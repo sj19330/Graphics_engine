@@ -125,7 +125,7 @@ vector<ModelTriangle> parser(){
 	bool mirrored;
 
 	//open read and creat a hashmap of mtl file contents then close
-	cfile.open("src/cornell-box.mtl");
+	cfile.open("src/materials.mtl");
 	if(!cfile.is_open()){
 		cout << "error opening mtl file" << endl;
 	}
@@ -1200,6 +1200,14 @@ void rayTraceDraw(DrawingWindow &window, vector<ModelTriangle> modelTriangles, v
 
 
 //main function
+// NOTE: to make an object mirrored go into the object file and write a line "m y"
+// this will make all the triangles below the line mirrored 
+// you can stop the other triangles being mirrored by writing the line "m n" on the line below 
+// this will make all the triangles below it not mirrored
+// eg.
+// m y
+// f 62/ 64/ 61/
+// m n
 int main(int argc, char *argv[]) {
 	initiliseLightPositions();
 	string choice;

@@ -853,7 +853,7 @@ void rasturisedDraw(DrawingWindow &window, vector<CanvasTriangle> canvasTriangle
 			lookAt();
 			for(int i=0; i<variables.canvasTriangles.size(); i++){
 				Colour tempColour = variables.triangleColours[i];
-				drawEmptyTriangle(window, variables.canvasTriangles[i], tempColour);
+				drawFilledTriangle(window, variables.canvasTriangles[i], tempColour);
 			}
 			window.renderFrame();
 		}

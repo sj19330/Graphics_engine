@@ -145,7 +145,7 @@ vector<ModelTriangle> parser(){
 	}
 	cfile.close();
 	//open and read the contents of the obj file then close
-	file.open("src/cornell-box.obj");
+	file.open("src/sphere2.obj");
 	if (!file.is_open()){
 		cout << "error opening obj file" << endl;
 	}
@@ -184,16 +184,16 @@ vector<ModelTriangle> parser(){
 				temp.mirrored = mirrored;
 				if (vertexNormals != empty){
 					if(fline.normals == empty2){
-						temp.vertexNormals = {vertexNormals[(fline.coords[0])-1], vertexNormals[(fline.coords[1])-1], vertexNormals[(fline.coords[2])-1]};	
+						temp.vertexNormals = {{vertexNormals[(fline.coords[0])-1], vertexNormals[(fline.coords[1])-1], vertexNormals[(fline.coords[2])-1]}};	
 					}
 					else{
-						temp.vertexNormals = {vertexNormals[(fline.normals[0])-1], vertexNormals[(fline.normals[1])-1], vertexNormals[(fline.normals[2])-1]};
+						temp.vertexNormals = {{vertexNormals[(fline.normals[0])-1], vertexNormals[(fline.normals[1])-1], vertexNormals[(fline.normals[2])-1]}};
 					}
 				}
 				if(vertexTextures.size() != 0){
                     if(fline.textures == empty2){
                     }else{
-                        temp.texturePoints = {vertexTextures[(fline.textures[0])-1], vertexTextures[(fline.textures[1])-1], vertexTextures[(fline.textures[2])-1]};
+                        temp.texturePoints = {{vertexTextures[(fline.textures[0])-1], vertexTextures[(fline.textures[1])-1], vertexTextures[(fline.textures[2])-1]}};
                         temp.textured = true;
                     }
                     
@@ -407,7 +407,7 @@ string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> p
 		}
 		else if (event.key.keysym.sym == SDLK_i){
 			cout << "orbit up" << endl;
-			glm::mat3 change = makeMatrix(10.0,'y');
+			glm::mat3 change = makeMatrix(5.0,'y');
 			CAMERAPOSITION = CAMERAPOSITION*change;
 		}
 		else if (event.key.keysym.sym == SDLK_k){
@@ -422,7 +422,7 @@ string handleEvent(SDL_Event event, DrawingWindow &window, vector<CanvasPoint> p
 		}
 		else if(event.key.keysym.sym == SDLK_s){
 			cout << "pan down" << endl;
-			glm::mat3 rotationMatrix = makeMatrix(-10.0,'w');
+			glm::mat3 rotationMatrix = makeMatrix(-5.0,'w');
 			CAMERAORIENTATION = rotationMatrix*CAMERAORIENTATION;
 		}
 		else if (event.key.keysym.sym == SDLK_a){
